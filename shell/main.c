@@ -5,6 +5,9 @@
 #include "./headers/auxiliares.h"
 #include "./headers/interpretador.h"
 #include "./headers/lista.h"
+#include "./headers/signal.h"
+
+Contexto estado;
 
 int main(int argc, char **argv)
 {
@@ -17,12 +20,14 @@ int main(int argc, char **argv)
     char **args = NULL;
 
     // Variáveis úteis
-    Contexto estado;
     int contador;
 
+    estado.fg = getpid();
     estado.pwd = malloc_safe(sizeof(char) * TAM_PWD);
     estado.num_processos = 0;
-    estado.processos = NULL;
+    inicializa_lista(&estado.processos);
+
+    signal(SIGCHLD, sig_chld);
 
     for (;;)
     {

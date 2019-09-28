@@ -17,7 +17,7 @@ void insere_lista(Node **L, Processo P)
 	nova->prox = *L;
 	*L = nova;
 
-	printf("    item inserido com ID %d e PID %d\n", nova->proc.id, nova->proc.pid);
+	// printf("    item inserido com ID %d e PID %d\n", nova->proc.id, nova->proc.pid);
 }
 
 Node *pesquisa_pid_lista(Node **L, pid_t pid) 
@@ -40,7 +40,6 @@ Node *pesquisa_id_lista(Node **L, unsigned int id)
 
 void remove_pid_lista(Node **L, pid_t pid)
 {
-    fflush(stdout);
     Node *antes_morta = *L;
     Node *morta = NULL;
 
@@ -51,21 +50,21 @@ void remove_pid_lista(Node **L, pid_t pid)
     else if (antes_morta->proc.pid == pid)
     {
         *L = antes_morta->prox;
-        printf("    removendo id %d pid %d", antes_morta->proc.id, antes_morta->proc.pid);
+        // printf("    removendo id %d pid %d\n", antes_morta->proc.id, antes_morta->proc.pid);
         free(antes_morta);
     }
     // Se não for vazia e não for o primeiro
     else
     {
         // Até que se chegue no fim ou encontre
-        while (antes_morta != NULL && antes_morta->prox->proc.pid != pid) 
+        while (antes_morta->prox != NULL && antes_morta->prox->proc.pid != pid) 
             antes_morta = antes_morta->prox;
 
-        if (antes_morta != NULL)
+        if (antes_morta->prox != NULL)
         {
             morta = antes_morta->prox;
             antes_morta->prox = morta->prox;
-            printf("    removendo id %d pid %d", morta->proc.id, morta->proc.pid);
+            // printf("    removendo id %d pid %d\n", morta->proc.id, morta->proc.pid);
             free(morta);
         }
     }
@@ -83,21 +82,21 @@ void remove_id_lista(Node **L, unsigned int id)
     else if (antes_morta->proc.id == id)
     {
         *L = antes_morta->prox;
-        printf("    removendo id %d pid %d", antes_morta->proc.id, antes_morta->proc.pid);
+        // printf("    removendo id %d pid %d\n", antes_morta->proc.id, antes_morta->proc.pid);
         free(antes_morta);
     }
     // Se não for vazia e não for o primeiro
     else
     {
         // Até que se chegue no fim ou encontre
-        while (antes_morta != NULL && antes_morta->prox->proc.id != id) 
+        while (antes_morta->prox != NULL && antes_morta->prox->proc.id != id) 
             antes_morta = antes_morta->prox;
 
-        if (antes_morta != NULL)
+        if (antes_morta->prox != NULL)
         {
             morta = antes_morta->prox;
             antes_morta->prox = morta->prox;
-            printf("    removendo id %d pid %d", morta->proc.id, morta->proc.pid);            
+            // printf("    removendo id %d pid %d\n", morta->proc.id, morta->proc.pid);            
             free(morta);
         }
     }
