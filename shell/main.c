@@ -24,7 +24,7 @@ int main(int argc, char **argv)
     for (;;)
     {
         // Imprimindo caminho atual
-        printf("%s$ ", estado.pwd);
+        printf("[%s]$ ", estado.pwd);
 
         // Lendo linha de comando
         buffer = NULL;

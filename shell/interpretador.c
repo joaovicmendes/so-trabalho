@@ -12,7 +12,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
     }
     else if (strcmp(argv[0], "pwd") == 0)
     {
-        printf("%s\n", estado.pwd);
+        printf("%s\n", estado->pwd);
     }
     else if (strcmp(argv[0], "cd") == 0)
     {
