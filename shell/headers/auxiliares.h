@@ -11,6 +11,6 @@ typedef struct contexto {
 void *malloc_safe(unsigned nbytes);
 
 // A função recebe uma string e remove desta string espaços desnecessários.
-void remove_espacos(char** texto);
+char *remove_espacos(char* texto);
 
 #endif

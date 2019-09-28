@@ -15,23 +15,23 @@ void *malloc_safe(unsigned nbytes)
     return p;
 }
 
-void remove_espacos(char** texto)
+char *remove_espacos(char* texto)
 {
-    char *aux = malloc(sizeof(char) * (strlen(*texto) + 1));
+    char *aux = malloc(sizeof(char) * (strlen(texto) + 1));
     char *texto_corrigido = NULL;
 
     int tam_final = 0;
-    for (int i = 0; i < strlen(*texto); i++)
+    for (int i = 0; i < strlen(texto); i++)
     {
-        if ((*texto)[i] != ' ')
-            aux[tam_final++] = (*texto)[i];
+        if (texto[i] != ' ')
+            aux[tam_final++] = texto[i];
 
         // Condições para copiar o espaço:
         // 1) Não está na 1a casa
         // 2) Não é precedido por um espaço
         // 3) Não é sucedido pelo caracter nulo (fim da frase)
-        else if (i != 0 && (*texto)[i-1] != ' ' && (*texto)[i+1] != '\0' && (*texto)[i+1] != '\n')
-            aux[tam_final++] = (*texto)[i];
+        else if (i != 0 && texto[i-1] != ' ' && texto[i+1] != '\0' && texto[i+1] != '\n')
+            aux[tam_final++] = texto[i];
     }
     // Se sobrou um ' ' na última posição antes do \n\0
     if (aux[strlen(aux) - 2] == ' ')
@@ -46,6 +46,5 @@ void remove_espacos(char** texto)
 
     free(aux);
     aux = NULL;
-    free(*texto);
-    (*texto) = texto_corrigido;
+    return texto_corrigido;
 }

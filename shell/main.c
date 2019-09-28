@@ -31,10 +31,11 @@ int main(int argc, char **argv)
         getline(&buffer, &buff_size, stdin);
 
         // Removendo espaços duplicados
-        remove_espacos(&buffer);
+        // buffer = remove_espacos(buffer);
         // Se o comando não é apenas "\n"
         if (strcmp(buffer, "\n") != 0)
         {
+            // Começa com um para guardar em args[0] o nome do programa
             contador = 1;
             for (int i = 0; i < strlen(buffer); i++)
             {
@@ -42,7 +43,7 @@ int main(int argc, char **argv)
                     contador++;
             }
 
-            // Alocando vetor de argumentos e preenchendo (arg[0] é o nome do programa)
+            // Alocando vetor de argumentos
             args = (char **) malloc_safe(contador * sizeof(char *));
             
             args[0] = strtok(buffer, " \n");

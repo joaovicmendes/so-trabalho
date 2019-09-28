@@ -32,5 +32,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
     }
     else
     {
+        // if (strcmp(argv[argc - 2], "&") == 0)
+        //     printf("Background!\n");
     }
 }
