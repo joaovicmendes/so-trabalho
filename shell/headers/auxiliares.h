@@ -10,4 +10,7 @@ typedef struct contexto {
 // Implementação do malloc() que já faz verificação de memória insuficiente
 void *malloc_safe(unsigned nbytes);
 
+// A função recebe uma string e remove desta string espaços desnecessários.
+void remove_espacos(char** texto);
+
 #endif

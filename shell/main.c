@@ -30,7 +30,8 @@ int main(int argc, char **argv)
         buffer = NULL;
         getline(&buffer, &buff_size, stdin);
 
-        // @cleanup: fazer função para remover espaços duplos
+        // Removendo espaços duplicados
+        remove_espacos(&buffer);
         // Se o comando não é apenas "\n"
         if (strcmp(buffer, "\n") != 0)
         {
