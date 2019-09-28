@@ -4,6 +4,7 @@
 #include <unistd.h>
 #include "./headers/auxiliares.h"
 #include "./headers/interpretador.h"
+#include "./headers/lista.h"
 
 int main(int argc, char **argv)
 {
@@ -20,9 +21,13 @@ int main(int argc, char **argv)
     int contador;
 
     estado.pwd = malloc_safe(sizeof(char) * TAM_PWD);
+    estado.num_processos = 0;
+    estado.processos = NULL;
 
     for (;;)
     {
+        //@cleanup implementar uma forma de lidar com os sinais sendo enviados pelo SO
+        
         // Imprimindo caminho atual
         estado.pwd = getcwd(estado.pwd, TAM_PWD);
         printf("[%s]$ ", estado.pwd);

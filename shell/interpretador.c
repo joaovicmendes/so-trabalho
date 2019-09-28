@@ -3,6 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "./headers/auxiliares.h"
+#include "./headers/lista.h"
 
 void interpreta(int argc, char **argv, Contexto *estado)
 {

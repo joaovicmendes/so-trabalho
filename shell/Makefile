@@ -4,13 +4,13 @@
 CXX = gcc
 CXXFLAGS = -Wall -pedantic
 
-OBJECTS = main.o interpretador.o auxiliares.o shell.c
+OBJECTS = main.o interpretador.o auxiliares.o lista.c
 
 shell: $(OBJECTS)
 	$(CXX) $(CXXFLAGS) -o $@ $^
 	rm *.o
 
-$(OBJECTS): ./headers/interpretador.h  ./headers/auxiliares.h ./headers/shell.h
+$(OBJECTS): ./headers/interpretador.h  ./headers/auxiliares.h ./headers/lista.h
 
 make clean:
 	rm *.o

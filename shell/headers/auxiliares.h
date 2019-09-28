@@ -1,16 +1,22 @@
 #ifndef AUX_H
 #define AUX_H
 
-#define TAM_PWD 200
+#define TAM_PWD 250
 
-typedef struct Processos {
+typedef struct Processo {
     pid_t pid;
-    struct processos *prox;
-} Processos;
+    unsigned int id;
+} Processo;
+
+typedef struct node {
+    struct node *prox;
+    Processo proc;
+} Node;
 
 typedef struct contexto {
     char *pwd;
-    Processos *proc;
+    unsigned int num_processos;
+    Node *processos;
 } Contexto;
 
 // Implementação do malloc() que já faz verificação de memória insuficiente
