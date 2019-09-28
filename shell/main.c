@@ -1,3 +1,15 @@
+/*
+    Universidade Federal de São Carlos – UFSCar
+    Departamento de Computação
+
+    Sistemas Operacionais
+    Prof. Dr. Fredy Valente
+    Prof. Dr. Hélio Crestana Guardia
+
+    Aluno: João Victor Mendes Freire (758943)
+    e Guilherme Locca Salomão (758569)
+*/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -27,13 +39,12 @@ int main(int argc, char **argv)
     estado.num_processos = 0;
     inicializa_lista(&estado.processos);
 
+    // Definindo como os sinais devem ser tratados
     signal(SIGCHLD, sig_chld);
     signal(SIGINT, sig_int);
 
     for (;;)
     {
-        //@cleanup implementar uma forma de lidar com os sinais sendo enviados pelo SO
-        
         // Imprimindo caminho atual
         estado.pwd = getcwd(estado.pwd, TAM_PWD);
         printf("[%s]$ ", estado.pwd);
@@ -48,7 +59,7 @@ int main(int argc, char **argv)
         if (strcmp(comando, "\n") != 0)
         {
             // Começa com dois para guardar em args[0] o nome do programa
-            // e em args[n] um NULL (usado no execv())
+            // e em args[n] um NULL (usado no execve())
             contador = 2;
             for (int i = 0; i < strlen(comando); i++)
             {

@@ -2,9 +2,9 @@
 #define SIGNAL_H
 
 // Tratamento do sinal SIGCHLD
-void sig_chld();
+void sig_chld(int sig);
 
-// Transferencia do sinal sig para o processo em fg
+// Tratamento do sinal SIGINT
 void sig_int(int sig);
 
 #endif

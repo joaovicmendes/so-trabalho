@@ -10,7 +10,7 @@
 
 extern Contexto estado;
 
-void sig_chld()
+void sig_chld(int sig)
 {
     pid_t pid;
     id_t id = 0;
