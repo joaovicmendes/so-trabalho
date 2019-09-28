@@ -3,8 +3,14 @@
 
 #define TAM_PWD 200
 
+typedef struct Processos {
+    pid_t pid;
+    struct processos *prox;
+} Processos;
+
 typedef struct contexto {
     char *pwd;
+    Processos *proc;
 } Contexto;
 
 // Implementação do malloc() que já faz verificação de memória insuficiente
