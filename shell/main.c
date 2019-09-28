@@ -5,7 +5,7 @@
 #include "./headers/auxiliares.h"
 #include "./headers/interpretador.h"
 #include "./headers/lista.h"
-#include "./headers/signal.h"
+#include "./headers/sinal.h"
 
 Contexto estado;
 
@@ -28,6 +28,7 @@ int main(int argc, char **argv)
     inicializa_lista(&estado.processos);
 
     signal(SIGCHLD, sig_chld);
+    signal(SIGINT, sig_int);
 
     for (;;)
     {

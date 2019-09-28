@@ -5,6 +5,7 @@
 #include <unistd.h>
 #include "./headers/auxiliares.h"
 #include "./headers/lista.h"
+#include "./headers/sinal.h"
 
 void interpreta(int argc, char **argv, Contexto *estado)
 {
@@ -65,20 +66,23 @@ void interpreta(int argc, char **argv, Contexto *estado)
         Processo novo_processo;
         pid_t pid;
 
-        estado->num_processos++;
-        novo_processo.id = estado->num_processos;
-        strcpy(novo_processo.nome, argv[0]);
-
         pid = fork();
         if (pid == 0) // Filho
         {
             // Se execve() retornar, algo de errado ocorreu
             if (execve(argv[0], argv, NULL) == -1)
+            {
                 printf("Problemas ao executar %s\n", argv[0]);
+                exit(1);
+            }
         }
         else // Pai
         {
+            estado->num_processos++;
             novo_processo.pid = pid;
+            novo_processo.id = estado->num_processos;
+            strcpy(novo_processo.nome, argv[0]);
+            
             insere_lista(&(estado->processos), novo_processo);
 
             // Se precisa ficar em background
