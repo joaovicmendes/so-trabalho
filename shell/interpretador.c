@@ -96,7 +96,34 @@ void interpreta(int argc, char **argv, Contexto *estado)
         Processo novo_processo;
         pid_t pid;
         
-
+        for(int i = 0; i<argc-1;i++){
+                if(strcmp(argv[i],"<")==0){
+                    
+                    char* pwd_in;
+                    pwd_in = malloc_safe(sizeof(char) * (TAM_PWD+strlen(argv[i+1])+1));
+                    strncpy(pwd_in,estado->pwd,strlen(estado->pwd));
+                    strcat(pwd_in,"/");//adiciona / antes de receber o nome do arquivo
+                    strcat(pwd_in,argv[i+1]);//adiciona nome do arquivo que vai abrir
+                    int fildes1 = open(pwd_in,O_RDONLY);  //abre o arquivo e armazena o file descriptor dele
+                    if(dup2(fildes1,0)<0){
+                        printf("deu mal\n");
+                    }
+                    close(fildes1);
+                }
+                if(strcmp(argv[i],">")==0){
+                    
+                    char* pwd_out;//path do arquivo de output
+                    pwd_out = malloc_safe(sizeof(char) * (TAM_PWD+strlen(argv[i+1])+1));//aloca espacos para armazenar o path
+                    strncpy(pwd_out,estado->pwd,strlen(estado->pwd));// recebe o path
+                    strcat(pwd_out,"/");//adiciona / antes de receber o nome do arquivo que vai receber o output
+                    strcat(pwd_out,argv[i+1]);//adiciona nome do arquivo de output
+                    int fildes2 = open(pwd_out,O_WRONLY);// abre o aquivo e armazena o file descripto dele
+                    if(dup2(fildes2,1)<0){//tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
+                        printf("deu ruim\n");
+                    }
+                    close(fildes2);
+                }
+            }
         //@cleanup encontrar uma forma de testar se o executável existe 
         // antes de chamar o fork()
         pid = fork();
