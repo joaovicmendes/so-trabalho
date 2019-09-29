@@ -3,6 +3,8 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <sys/wait.h>
+#include <sys/types.h>
 #include "./headers/auxiliares.h"
 #include "./headers/interpretador.h"
 #include "./headers/lista.h"

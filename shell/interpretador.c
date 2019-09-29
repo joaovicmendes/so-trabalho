@@ -3,6 +3,7 @@
 #include <string.h>
 #include <signal.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include "./headers/auxiliares.h"
 #include "./headers/lista.h"
 #include "./headers/sinal.h"
@@ -70,11 +71,14 @@ void interpreta(int argc, char **argv, Contexto *estado)
     {
         Processo novo_processo;
         pid_t pid;
+        
 
         pid = fork();
         if (pid == 0) // Filho
         {
             pid = getpid();
+            
+            
 
             // Se execve() retornar, algo de errado ocorreu
             if (execve(argv[0], argv, NULL) == -1)
@@ -110,3 +114,4 @@ void interpreta(int argc, char **argv, Contexto *estado)
         }
     }
 }
+
