@@ -141,7 +141,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     strcat(pwd_out, argv[i + 1]);
 
                     // abre o aquivo e armazena o file descriptor dele
-                    int fildes2 = open(pwd_out, O_WRONLY | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
+                    int fildes2 = open(pwd_out, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
                     // tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
                     if (dup2(fildes2, 1) < 0)
                         printf("Problemas ao criar file descriptor\n");
@@ -150,10 +150,30 @@ void interpreta(int argc, char **argv, Contexto *estado)
                 }
             }
 
-            pid = getpid();
+            pid = getpid(); // Pegando o PID do filho
+
+            // Limpando a lista de argumentos, ou seja, passando os argumentos
+            // até encontrar um dentre <, > e &
+            int contador = 2;   // Começa em dois para guardar argv[0]: nomeprograma e argv[n]: NULL
+            char **args = NULL;
+            char achou = 0;
+
+            for (int i = 1; !achou && i < argc - 1; i++)
+            {
+                if (strcmp(argv[i], ">") == 0 || strcmp(argv[i], "<") == 0 || strcmp(argv[i], "&") == 0)
+                    achou = 1;
+                else
+                    contador++;
+            }
+
+            args = malloc_safe(sizeof(char *) * contador);
+
+            for (int i = 0; i < contador - 1; i++)
+                args[i] = argv[i];
+            args[contador - 1] = NULL;
 
             // Se execve() retornar, algo de errado ocorreu
-            if (execve(argv[0], argv, NULL) == -1)
+            if (execve(argv[0], args, NULL) == -1)
             {
                 printf("Problemas ao executar %s\n", argv[0]);
                 sleep(1); // Para garantir que processo foi devidamente adicionado à lista do shell
