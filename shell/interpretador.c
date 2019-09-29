@@ -95,9 +95,18 @@ void interpreta(int argc, char **argv, Contexto *estado)
     {
         Processo novo_processo;
         pid_t pid;
+        int fd;
 
-        //@cleanup encontrar uma forma de testar se o executável existe 
-        // antes de chamar o fork()
+        // Se o arquivo existente em argv[0] não existir
+        fd = open(argv[0], O_RDONLY);
+        if (fd == -1)
+        {
+            printf("Problemas ao executar %s\n", argv[0]);
+            return;
+        }
+        close(fd);
+ 
+        // Se o arquivo existe, basta duplicar o processo e execve()
         pid = fork();
         if (pid == 0) // Filho
         {
@@ -112,8 +121,8 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     strcat(pwd_in, "/");
                     // adiciona nome do arquivo que vai abrir
                     strcat(pwd_in, argv[i + 1]);
-                    
-                    int fildes1 = open(pwd_in, O_RDONLY);  // abre o arquivo e armazena o file descriptor dele
+
+                    int fildes1 = open(pwd_in, O_RDONLY | O_CREAT);  // abre o arquivo e armazena o file descriptor dele
                     
                     if (dup2(fildes1, 0) < 0)
                         printf("Problemas ao criar file descriptor\n");
@@ -131,7 +140,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     strcat(pwd_out, argv[i + 1]);
 
                     // abre o aquivo e armazena o file descriptor dele
-                    int fildes2 = open(pwd_out, O_WRONLY);
+                    int fildes2 = open(pwd_out, O_WRONLY | O_CREAT);
                     // tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
                     if (dup2(fildes2, 1) < 0)
                         printf("Problemas ao criar file descriptor\n");
