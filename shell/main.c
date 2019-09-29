@@ -50,7 +50,7 @@ int main(int argc, char **argv)
         estado.pwd = malloc_safe(sizeof(char) * TAM_PWD);
         // Imprimindo caminho atual
         estado.pwd = getcwd(estado.pwd, TAM_PWD);
-        printf("[%s]$ ", estado.pwd);
+        printf("\033[1;31m[%s]$\033[0m ", estado.pwd);
 
         // Lendo linha de comando
         buffer = NULL;
