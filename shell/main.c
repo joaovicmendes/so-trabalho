@@ -26,7 +26,7 @@ int main(int argc, char **argv)
 {
     // Buffer de leitura e tamanho
     size_t buff_size;
-    char *buffer = NULL;
+    char *buffer  = NULL;
     char *comando = NULL;
 
     // Comando e lista de argumentos
@@ -47,6 +47,7 @@ int main(int argc, char **argv)
 
     for (;;)
     {
+        estado.pwd = malloc_safe(sizeof(char) * TAM_PWD);
         // Imprimindo caminho atual
         estado.pwd = getcwd(estado.pwd, TAM_PWD);
         printf("[%s]$ ", estado.pwd);
@@ -86,6 +87,8 @@ int main(int argc, char **argv)
         buffer = NULL;
         free(comando);
         comando = NULL;
+        free(estado.pwd);
+        estado.pwd = NULL;
     }
 
     return 0;
