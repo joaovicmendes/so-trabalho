@@ -42,6 +42,7 @@ int main(int argc, char **argv)
     // Definindo como os sinais devem ser tratados
     signal(SIGCHLD, sig_chld);
     signal(SIGINT, sig_int);
+    signal(SIGTSTP, sig_tstp);
 
     for (;;)
     {

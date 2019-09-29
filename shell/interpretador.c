@@ -31,15 +31,9 @@ void interpreta(int argc, char **argv, Contexto *estado)
     }
     else if (strcmp(argv[0], "bg") == 0)
     {
-        // Não implementado
-    }
-    else if (strcmp(argv[0], "fg") == 0)
-    {
         // Verificando se o número de argumentos está correto
-        if (argc < 3)
-            printf("Argumentos insuficientes\n");
-        else if (argc > 3)
-            printf("Argumentos excedentes\n");
+        if (argc != 3)
+            printf("%d argumentos, esperava 1\n", argc - 2);
         else
         {
             unsigned int num_job;
@@ -49,10 +43,34 @@ void interpreta(int argc, char **argv, Contexto *estado)
             Node *aux = pesquisa_id_lista(&(estado->processos), num_job);
             if (aux != NULL)
             {
-                waitpid(aux->proc.pid, NULL, 0);
-                remove_pid_lista(&(estado->processos), aux->proc.pid);
-                        
-                printf("Processo %d finalizado\n", aux->proc.pid);   
+                if (aux->proc.stopped)
+                {
+                    aux->proc.stopped = 0;
+                    kill(aux->proc.pid, SIGCONT);
+                }
+            }
+        }
+    }
+    else if (strcmp(argv[0], "fg") == 0)
+    {
+        // Verificando se o número de argumentos está correto
+        if (argc != 3)
+            printf("%d argumentos, esperava 1\n", argc - 2);
+        else
+        {
+            unsigned int num_job;
+            sscanf(argv[1], "%d ", &num_job);
+
+            // Pesquisando se processo requisitado está em execução
+            Node *aux = pesquisa_id_lista(&(estado->processos), num_job);
+            if (aux != NULL)
+            {
+                if (aux->proc.stopped)
+                {
+                    aux->proc.stopped = 0;
+                    kill(aux->proc.pid, SIGCONT);
+                }
+                espera_processo(aux->proc.pid, estado);
             }
         }
     }
@@ -62,7 +80,13 @@ void interpreta(int argc, char **argv, Contexto *estado)
         Node *aux = estado->processos;
         while (aux != NULL)
         {
-            printf(" [%d] %s %d\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+            if (aux->proc.stopped)
+                printf(" [%d] Stopped    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+            else if (estado->fg == aux->proc.pid)
+                printf(" [%d] Running    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+            else
+                printf(" [%d] Running    %s &  (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+            
             aux = aux->prox;
         }
     }
@@ -71,6 +95,8 @@ void interpreta(int argc, char **argv, Contexto *estado)
         Processo novo_processo;
         pid_t pid;
 
+        //@cleanup encontrar uma forma de testar se o executável existe 
+        // antes de chamar o fork()
         pid = fork();
         if (pid == 0) // Filho
         {
@@ -80,10 +106,10 @@ void interpreta(int argc, char **argv, Contexto *estado)
             if (execve(argv[0], argv, NULL) == -1)
             {
                 printf("Problemas ao executar %s\n", argv[0]);
-                sleep(2); // Para garantir que processo foi devidamente adicionado à lista do shell
+                sleep(1); // Para garantir que processo foi devidamente adicionado à lista do shell
 
                 remove_pid_lista(&(estado->processos), pid);
-                exit(1);
+                exit(0);
             }
         }
         else // Pai
@@ -93,20 +119,14 @@ void interpreta(int argc, char **argv, Contexto *estado)
             estado->num_processos++;
             novo_processo.pid = pid;
             novo_processo.id = estado->num_processos;
+            novo_processo.stopped = 0;
             strcpy(novo_processo.nome, argv[0]);
             
             insere_lista(&(estado->processos), novo_processo);
 
             // Verificando se precisa ficar em background
             if (strcmp(argv[argc - 2], "&") != 0)
-            {
-                estado->fg = pid;
-                waitpid(pid, NULL, 0);
-                estado->fg = getpid();
-                remove_pid_lista(&(estado->processos), pid);
-
-                printf("Processo %d finalizado\n", pid);
-            }
+                espera_processo(pid, estado);
         }
     }
 }
