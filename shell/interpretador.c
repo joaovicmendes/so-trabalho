@@ -115,23 +115,24 @@ void interpreta(int argc, char **argv, Contexto *estado)
             {
                 if (strcmp(argv[i], "<") == 0)
                 {    
-                    char* pwd_in = malloc_safe(sizeof(char) * (TAM_PWD + strlen(argv[i + 1]) + 1));
+                    char* pwd_in = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
                     strncpy(pwd_in, estado->pwd, strlen(estado->pwd));
                     // adiciona / antes de receber o nome do arquivo
                     strcat(pwd_in, "/");
                     // adiciona nome do arquivo que vai abrir
                     strcat(pwd_in, argv[i + 1]);
-
-                    int fildes1 = open(pwd_in, O_RDONLY | O_CREAT);  // abre o arquivo e armazena o file descriptor dele
+                    // abre o arquivo e armazena o file descriptor dele
+                    int fildes1 = open(pwd_in, O_RDONLY | O_CREAT);
                     
                     if (dup2(fildes1, 0) < 0)
                         printf("Problemas ao criar file descriptor\n");
 
                     close(fildes1);
+                    free(pwd_in);
                 }
-                if(strcmp(argv[i], ">") == 0)
+                else if(strcmp(argv[i], ">") == 0)
                 {
-                    char* pwd_out = malloc_safe(sizeof(char) * (TAM_PWD+strlen(argv[i + 1]) + 1));
+                    char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
 
                     strncpy(pwd_out, estado->pwd, strlen(estado->pwd));
                     // adiciona / antes de receber o nome do arquivo que vai receber o output
@@ -145,6 +146,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     if (dup2(fildes2, 1) < 0)
                         printf("Problemas ao criar file descriptor\n");
                     close(fildes2);
+                    free(pwd_out);
                 }
             }
 
