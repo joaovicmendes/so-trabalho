@@ -122,7 +122,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     // adiciona nome do arquivo que vai abrir
                     strcat(pwd_in, argv[i + 1]);
                     // abre o arquivo e armazena o file descriptor dele
-                    int fildes1 = open(pwd_in, O_RDONLY | O_CREAT);
+                    int fildes1 = open(pwd_in, O_RDONLY | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
                     
                     if (dup2(fildes1, 0) < 0)
                         printf("Problemas ao criar file descriptor\n");
@@ -141,7 +141,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     strcat(pwd_out, argv[i + 1]);
 
                     // abre o aquivo e armazena o file descriptor dele
-                    int fildes2 = open(pwd_out, O_WRONLY | O_CREAT);
+                    int fildes2 = open(pwd_out, O_WRONLY | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
                     // tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
                     if (dup2(fildes2, 1) < 0)
                         printf("Problemas ao criar file descriptor\n");
