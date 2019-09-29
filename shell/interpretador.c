@@ -113,7 +113,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
             // Tratando de programas que usam > e < para redirecionar as entrada e saída padrão
             for (int i = 0; i < argc - 1;i++)
             {
-                if (strcmp(argv[i], "<") == 0)
+                if (strcmp(argv[i], "<") == 0)  // Redirecionamento de entrada
                 {    
                     char* pwd_in = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
                     strncpy(pwd_in, estado->pwd, strlen(estado->pwd));
@@ -130,7 +130,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     close(fildes1);
                     free(pwd_in);
                 }
-                else if(strcmp(argv[i], ">") == 0)
+                else if(strcmp(argv[i], ">") == 0) // Redirecionamento de entrada truncando arquivo
                 {
                     char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
 
@@ -148,6 +148,42 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     close(fildes2);
                     free(pwd_out);
                 }
+                else if(strcmp(argv[i], ">>") == 0) // Redirecionamento de entrada adicionando ao arquivo
+                {
+                    char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
+
+                    strncpy(pwd_out, estado->pwd, strlen(estado->pwd));
+                    // adiciona / antes de receber o nome do arquivo que vai receber o output
+                    strcat(pwd_out, "/");
+                    // adiciona nome do arquivo de output
+                    strcat(pwd_out, argv[i + 1]);
+
+                    // abre o aquivo e armazena o file descriptor dele
+                    int fildes2 = open(pwd_out, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
+                    // tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
+                    if (dup2(fildes2, 1) < 0)
+                        printf("Problemas ao criar file descriptor\n");
+                    close(fildes2);
+                    free(pwd_out);
+                }
+                else if(strcmp(argv[i], "2>") == 0) // Redirecionamento de arquivo de erro
+                {
+                    char* pwd_err = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
+
+                    strncpy(pwd_err, estado->pwd, strlen(estado->pwd));
+                    // adiciona / antes de receber o nome do arquivo que vai receber o output
+                    strcat(pwd_err, "/");
+                    // adiciona nome do arquivo de output
+                    strcat(pwd_err, argv[i + 1]);
+
+                    // abre o aquivo e armazena o file descriptor dele
+                    int fildes3 = open(pwd_err, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
+                    // tenta "redirecionar" o output, onde o fildes3(arquivo output) recebe o que esta no 1(stdout)
+                    if (dup2(fildes3, 2) < 0)
+                        printf("Problemas ao criar file descriptor\n");
+                    close(fildes3);
+                    free(pwd_err);
+                }
             }
 
             pid = getpid(); // Pegando o PID do filho
@@ -160,7 +196,8 @@ void interpreta(int argc, char **argv, Contexto *estado)
 
             for (int i = 1; !achou && i < argc - 1; i++)
             {
-                if (strcmp(argv[i], ">") == 0 || strcmp(argv[i], "<") == 0 || strcmp(argv[i], "&") == 0)
+                if (strcmp(argv[i], ">") == 0 || strcmp(argv[i], "<") == 0 || strcmp(argv[i], "&") == 0
+                || strcmp(argv[i], ">>") == 0 || strcmp(argv[i], "2>") == 0)
                     achou = 1;
                 else
                     contador++;
