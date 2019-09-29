@@ -8,6 +8,7 @@ typedef struct Processo {
     unsigned int id;
     char nome[100];
     pid_t pid;
+    char stopped;
 } Processo;
 
 // Struct da lista encadada de processos
@@ -29,5 +30,8 @@ void *malloc_safe(unsigned nbytes);
 
 // A função recebe uma string e remove espaços desnecessários.
 char *remove_espacos(char* texto);
+
+// Função para esperar até que um processo filho termine ou pare
+void espera_processo(pid_t pid, Contexto *estado);
 
 #endif

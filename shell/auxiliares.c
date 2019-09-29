@@ -1,7 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <unistd.h>
 #include "./headers/auxiliares.h"
+#include "./headers/interpretador.h"
+#include "./headers/lista.h"
+#include "./headers/sinal.h"
 
 void *malloc_safe(unsigned nbytes)
 {
@@ -47,4 +51,30 @@ char *remove_espacos(char* texto)
     free(aux);
     aux = NULL;
     return texto_corrigido;
+}
+
+void espera_processo(pid_t pid, Contexto *estado)
+{
+    int status;
+
+    waitpid(pid, &status, WUNTRACED);
+    
+    Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
+
+    if (WIFEXITED(status) || WIFSIGNALED(status))
+    {
+        printf(" [%d] Done    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+        remove_pid_lista(&(estado->processos), pid);
+        estado->fg = getpid();
+    }
+    else if (WIFSTOPPED(status))
+    {
+        Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
+        if (aux != NULL)
+        {
+            aux->proc.stopped = 1;
+            printf(" [%d] Stopped    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+        }
+        estado->fg = getpid();
+    }
 }
