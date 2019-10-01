@@ -13,3 +13,6 @@ O grupo é composto pelos alunos:
 - `interpretador.c` Arquivo com as funções responsáveis por interpretar os comandos
 - `lista.c` Arquivo com as funções relacionadas à lista encadeada
 - `sinal.c` Arquivo com as funções relacionadas à tratamento de sinais
+
+# Dúvidas
+Nossa principal dúvida foi a respeito de conceitos como de terminal. Não compreendemos como fazer com que um job em background não possa ter acesso à entrada e saída padrão, usando chamadas como `tcsetpgid()` e `tcgetpgid()`.
