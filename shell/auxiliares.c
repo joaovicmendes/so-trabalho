@@ -56,6 +56,7 @@ void espera_processo(pid_t pid, Contexto *estado)
     int status;
 
     waitpid(pid, &status, WUNTRACED);
+
     Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
     if (aux != NULL)
     {
@@ -69,5 +70,12 @@ void espera_processo(pid_t pid, Contexto *estado)
             aux->proc.stopped = 1;
             printf(" [%d] Stopped    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
         }
+        if (estado->fg == pid)
+        {
+            estado->fg = getpid();    
+            tcsetpgrp(STDIN_FILENO, estado->pgid);
+        }   
     }
+
+    fflush(stdout);
 }

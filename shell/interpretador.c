@@ -71,11 +71,9 @@ void interpreta(int argc, char **argv, Contexto *estado)
             Node *aux = pesquisa_id_lista(&(estado->processos), num_job);
             if (aux != NULL)
             {
-                kill(aux->proc.pid, SIGCONT);
-
                 estado->fg = aux->proc.pid;
-                if (strcmp(argv[argc - 2], "&") != 0)
-                    tcsetpgrp(STDIN_FILENO, aux->proc.pid);
+                tcsetpgrp(STDIN_FILENO, aux->proc.pid);
+                kill(aux->proc.pid, SIGCONT);
                 espera_processo(aux->proc.pid, estado);
 
                 // Devolvendo o controle do terminal para o shell
