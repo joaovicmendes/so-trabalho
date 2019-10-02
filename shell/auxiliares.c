@@ -58,7 +58,6 @@ void espera_processo(pid_t pid, Contexto *estado)
     int status;
 
     waitpid(pid, &status, WUNTRACED);
-    
     Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
     if (aux != NULL)
     {

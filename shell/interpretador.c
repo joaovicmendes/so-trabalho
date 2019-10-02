@@ -8,6 +8,8 @@
 #include "./headers/lista.h"
 #include "./headers/sinal.h"
 
+void static prog(int argc, char **argv, Contexto *estado);
+
 void interpreta(int argc, char **argv, Contexto *estado)
 {
     if (strcmp(argv[0], "exit") == 0)
@@ -49,13 +51,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
             // Pesquisando se processo requisitado está em execução
             Node *aux = pesquisa_id_lista(&(estado->processos), num_job);
             if (aux != NULL)
-            {
-                if (aux->proc.stopped)
-                {
-                    aux->proc.stopped = 0;
-                    kill(aux->proc.pid, SIGCONT);
-                }
-            }
+                kill(aux->proc.pid, SIGCONT);
         }
     }
     else if (strcmp(argv[0], "fg") == 0)
@@ -76,13 +72,15 @@ void interpreta(int argc, char **argv, Contexto *estado)
             Node *aux = pesquisa_id_lista(&(estado->processos), num_job);
             if (aux != NULL)
             {
-                if (aux->proc.stopped)
-                {
-                    aux->proc.stopped = 0;
-                    kill(aux->proc.pid, SIGCONT);
-                }
+                kill(aux->proc.pid, SIGCONT);
+
                 estado->fg = aux->proc.pid;
+                if (strcmp(argv[argc - 2], "&") != 0)
+                    tcsetpgrp(STDIN_FILENO, aux->proc.pid);
                 espera_processo(aux->proc.pid, estado);
+
+                // Devolvendo o controle do terminal para o shell
+                tcsetpgrp(STDIN_FILENO, estado->pgid);
             }
         }
     }
@@ -104,171 +102,199 @@ void interpreta(int argc, char **argv, Contexto *estado)
     }
     else // Um programa externo
     {
-        Processo novo_processo;
-        pid_t pid;
-        int fd;
+        prog(argc, argv, estado);
+    }
+}
 
-        // Se o arquivo existente em argv[0] não existir
-        fd = open(argv[0], O_RDONLY);
-        if (fd == -1)
+void static prog(int argc, char **argv, Contexto *estado)
+{
+    Processo novo_processo;
+    pid_t pid;
+    int fd;
+    int contador;
+    char **args;
+    char achou;
+
+    // Se o arquivo existente em argv[0] não existir
+    fd = open(argv[0], O_RDONLY);
+    if (fd == -1)
+    {
+        printf("Problemas ao encontrar '%s'\n", argv[0]);
+        return;
+    }
+    close(fd);
+
+    // Se o arquivo existe, basta duplicar o processo e execve()
+    pid = fork();
+    if (pid == 0) // Filho
+    {
+        pid = getpid(); // Pegando o PID do filho
+
+        // Atualizando parent group
+        setpgid(pid, pid);
+
+        // Assumindo o controle do terminal, se estiver em foreground
+        if (strcmp(argv[argc - 2], "&") != 0)
+            tcsetpgrp(STDIN_FILENO, pid);
+
+        // Desabilitanto o tratamento de sinais para este processos
+        signal(SIGINT,  SIG_DFL);
+        signal(SIGQUIT, SIG_DFL);
+        signal(SIGTSTP, SIG_DFL);
+        signal(SIGTTIN, SIG_DFL);
+        signal(SIGTTOU, SIG_DFL);
+        signal(SIGCHLD, SIG_DFL);
+
+        // Tratando de programas que usam > e < para redirecionar as entrada e saída padrão
+        for (int i = 0; i < argc - 1;i++)
         {
-            printf("Problemas ao executar %s\n", argv[0]);
-            return;
-        }
-        close(fd);
- 
-        // Se o arquivo existe, basta duplicar o processo e execve()
-        pid = fork();
-        if (pid == 0) // Filho
-        {
+            if (strcmp(argv[i], "<") == 0)  // Redirecionamento de entrada
+            {    
+                char* pwd_in = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
+                strncpy(pwd_in, estado->pwd, strlen(estado->pwd));
+                // adiciona / antes de receber o nome do arquivo
+                strcat(pwd_in, "/");
+                // adiciona nome do arquivo que vai abrir
+                strcat(pwd_in, argv[i + 1]);
+                // abre o arquivo e armazena o file descriptor dele
+                int fildes1 = open(pwd_in, O_RDONLY | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
+                
+                if (dup2(fildes1, 0) < 0)
+                    printf("Problemas ao criar file descriptor\n");
 
-            // Desabilitanto o tratamento de sinais para estes processos
-            signal(SIGCHLD, SIG_DFL);
-            signal(SIGINT, SIG_DFL);
-            signal(SIGTSTP, SIG_DFL);
-
-            // Tratando de programas que usam > e < para redirecionar as entrada e saída padrão
-            for (int i = 0; i < argc - 1;i++)
-            {
-                if (strcmp(argv[i], "<") == 0)  // Redirecionamento de entrada
-                {    
-                    char* pwd_in = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
-                    strncpy(pwd_in, estado->pwd, strlen(estado->pwd));
-                    // adiciona / antes de receber o nome do arquivo
-                    strcat(pwd_in, "/");
-                    // adiciona nome do arquivo que vai abrir
-                    strcat(pwd_in, argv[i + 1]);
-                    // abre o arquivo e armazena o file descriptor dele
-                    int fildes1 = open(pwd_in, O_RDONLY | O_CREAT, S_IRWXU | S_IRWXG | S_IRWXO);
-                    
-                    if (dup2(fildes1, 0) < 0)
-                        printf("Problemas ao criar file descriptor\n");
-
-                    close(fildes1);
-                    free(pwd_in);
-                }
-                else if(strcmp(argv[i], ">") == 0) // Redirecionamento de entrada truncando arquivo
-                {
-                    char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
-
-                    strncpy(pwd_out, estado->pwd, strlen(estado->pwd));
-                    // adiciona / antes de receber o nome do arquivo que vai receber o output
-                    strcat(pwd_out, "/");
-                    // adiciona nome do arquivo de output
-                    strcat(pwd_out, argv[i + 1]);
-
-                    // abre o aquivo e armazena o file descriptor dele
-                    int fildes2 = open(pwd_out, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
-                    // tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
-                    if (dup2(fildes2, 1) < 0)
-                        printf("Problemas ao criar file descriptor\n");
-                    close(fildes2);
-                    free(pwd_out);
-                }
-                else if(strcmp(argv[i], ">>") == 0) // Redirecionamento de entrada adicionando ao arquivo
-                {
-                    char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
-
-                    strncpy(pwd_out, estado->pwd, strlen(estado->pwd));
-                    // adiciona / antes de receber o nome do arquivo que vai receber o output
-                    strcat(pwd_out, "/");
-                    // adiciona nome do arquivo de output
-                    strcat(pwd_out, argv[i + 1]);
-
-                    // abre o aquivo e armazena o file descriptor dele
-                    int fildes2 = open(pwd_out, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
-                    // tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
-                    if (dup2(fildes2, 1) < 0)
-                        printf("Problemas ao criar file descriptor\n");
-                    close(fildes2);
-                    free(pwd_out);
-                }
-                else if(strcmp(argv[i], "2>") == 0) // Redirecionamento de arquivo de erro
-                {
-                    char* pwd_err = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
-
-                    strncpy(pwd_err, estado->pwd, strlen(estado->pwd));
-                    // adiciona / antes de receber o nome do arquivo que vai receber o output
-                    strcat(pwd_err, "/");
-                    // adiciona nome do arquivo de output
-                    strcat(pwd_err, argv[i + 1]);
-
-                    // abre o aquivo e armazena o file descriptor dele
-                    int fildes3 = open(pwd_err, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
-                    // tenta "redirecionar" o output, onde o fildes3(arquivo output) recebe o que esta no 1(stdout)
-                    if (dup2(fildes3, 2) < 0)
-                        printf("Problemas ao criar file descriptor\n");
-                    close(fildes3);
-                    free(pwd_err);
-                }
-                else if(strcmp(argv[i], "2>>") == 0) // Redirecionamento de arquivo de erro
-                {
-                    char* pwd_err = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
-
-                    strncpy(pwd_err, estado->pwd, strlen(estado->pwd));
-                    // adiciona / antes de receber o nome do arquivo que vai receber o output
-                    strcat(pwd_err, "/");
-                    // adiciona nome do arquivo de output
-                    strcat(pwd_err, argv[i + 1]);
-
-                    // abre o aquivo e armazena o file descriptor dele
-                    int fildes3 = open(pwd_err, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
-                    // tenta "redirecionar" o output, onde o fildes3(arquivo output) recebe o que esta no 1(stdout)
-                    if (dup2(fildes3, 2) < 0)
-                        printf("Problemas ao criar file descriptor\n");
-                    close(fildes3);
-                    free(pwd_err);
-                }
+                close(fildes1);
+                free(pwd_in);
             }
-
-            pid = getpid(); // Pegando o PID do filho
-
-            // Limpando a lista de argumentos, ou seja, passando os argumentos
-            // até encontrar um dentre <, > e &
-            int contador = 2;   // Começa em dois para guardar argv[0]: nomeprograma e argv[n]: NULL
-            char **args = NULL;
-            char achou = 0;
-
-            for (int i = 1; !achou && i < argc - 1; i++)
+            else if(strcmp(argv[i], ">") == 0) // Redirecionamento de entrada truncando arquivo
             {
-                if (strcmp(argv[i], ">") == 0 || strcmp(argv[i], "<") == 0 || strcmp(argv[i], "&") == 0
-                || strcmp(argv[i], ">>") == 0 || strcmp(argv[i], "2>") == 0 || strcmp(argv[i], "2>>") == 0)
-                    achou = 1;
-                else
-                    contador++;
+                char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
+
+                strncpy(pwd_out, estado->pwd, strlen(estado->pwd));
+                // adiciona / antes de receber o nome do arquivo que vai receber o output
+                strcat(pwd_out, "/");
+                // adiciona nome do arquivo de output
+                strcat(pwd_out, argv[i + 1]);
+
+                // abre o aquivo e armazena o file descriptor dele
+                int fildes2 = open(pwd_out, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
+                // tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
+                if (dup2(fildes2, 1) < 0)
+                    printf("Problemas ao criar file descriptor\n");
+                close(fildes2);
+                free(pwd_out);
             }
-
-            args = malloc_safe(sizeof(char *) * contador);
-
-            for (int i = 0; i < contador - 1; i++)
-                args[i] = argv[i];
-            args[contador - 1] = NULL;
-
-            // Se execve() retornar, algo de errado ocorreu
-            if (execve(argv[0], args, NULL) == -1)
+            else if(strcmp(argv[i], ">>") == 0) // Redirecionamento de entrada adicionando ao arquivo
             {
-                printf("Problemas ao executar %s\n", argv[0]);
-                sleep(1); // Para garantir que processo foi devidamente adicionado à lista do shell
+                char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
 
-                remove_pid_lista(&(estado->processos), pid);
-                exit(0);
+                strncpy(pwd_out, estado->pwd, strlen(estado->pwd));
+                // adiciona / antes de receber o nome do arquivo que vai receber o output
+                strcat(pwd_out, "/");
+                // adiciona nome do arquivo de output
+                strcat(pwd_out, argv[i + 1]);
+
+                // abre o aquivo e armazena o file descriptor dele
+                int fildes2 = open(pwd_out, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
+                // tenta "redirecionar" o output, onde o fildes2(arquivo output) recebe o que esta no 1(stdout)
+                if (dup2(fildes2, 1) < 0)
+                    printf("Problemas ao criar file descriptor\n");
+                close(fildes2);
+                free(pwd_out);
+            }
+            else if(strcmp(argv[i], "2>") == 0) // Redirecionamento de arquivo de erro
+            {
+                char* pwd_err = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
+
+                strncpy(pwd_err, estado->pwd, strlen(estado->pwd));
+                // adiciona / antes de receber o nome do arquivo que vai receber o output
+                strcat(pwd_err, "/");
+                // adiciona nome do arquivo de output
+                strcat(pwd_err, argv[i + 1]);
+
+                // abre o aquivo e armazena o file descriptor dele
+                int fildes3 = open(pwd_err, O_WRONLY | O_CREAT | O_TRUNC, S_IRWXU | S_IRWXG | S_IRWXO);
+                // tenta "redirecionar" o output, onde o fildes3(arquivo output) recebe o que esta no 1(stdout)
+                if (dup2(fildes3, 2) < 0)
+                    printf("Problemas ao criar file descriptor\n");
+                close(fildes3);
+                free(pwd_err);
+            }
+            else if(strcmp(argv[i], "2>>") == 0) // Redirecionamento de arquivo de erro
+            {
+                char* pwd_err = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
+
+                strncpy(pwd_err, estado->pwd, strlen(estado->pwd));
+                // adiciona / antes de receber o nome do arquivo que vai receber o output
+                strcat(pwd_err, "/");
+                // adiciona nome do arquivo de output
+                strcat(pwd_err, argv[i + 1]);
+
+                // abre o aquivo e armazena o file descriptor dele
+                int fildes3 = open(pwd_err, O_WRONLY | O_CREAT | O_APPEND, S_IRWXU | S_IRWXG | S_IRWXO);
+                // tenta "redirecionar" o output, onde o fildes3(arquivo output) recebe o que esta no 1(stdout)
+                if (dup2(fildes3, 2) < 0)
+                    printf("Problemas ao criar file descriptor\n");
+                close(fildes3);
+                free(pwd_err);
             }
         }
-        else // Pai
+
+        // Limpando a lista de argumentos, ou seja, passando os argumentos
+        // até encontrar um dentre <, > e &.
+        // contador começa em dois para guardar argv[0]: nomeprograma e 
+        //argv[n]: NULL.
+        contador = 2;
+        args = NULL;
+        achou = 0;
+
+        for (int i = 1; !achou && i < argc - 1; i++)
         {
-            // Atualizando estado e criando dados do processo a ser adicionado
-            // à lista do shell
-            estado->num_processos++;
-            novo_processo.pid = pid;
-            novo_processo.id = estado->num_processos;
-            novo_processo.stopped = 0;
-            strcpy(novo_processo.nome, argv[0]);
+            if (strcmp(argv[i], ">") == 0 || strcmp(argv[i], "<" ) == 0 || strcmp(argv[i], "&"  ) == 0
+            || strcmp(argv[i], ">>") == 0 || strcmp(argv[i], "2>") == 0 || strcmp(argv[i], "2>>") == 0)
+                achou = 1;
+            else
+                contador++;
+        }
+
+        args = malloc_safe(sizeof(char *) * contador);
+
+        for (int i = 0; i < contador - 1; i++)
+            args[i] = argv[i];
+        args[contador - 1] = NULL;
+
+        // Se execve() retornar, algo de errado ocorreu
+        if (execve(argv[0], args, NULL) == -1)
+        {
+            printf("Problemas ao executar '%s'\n", argv[0]);
+            sleep(1);
+            remove_pid_lista(&(estado->processos), pid);
+            exit(1);
+        }
+    }
+    else // Pai
+    {
+        // Atualizando parent group
+        setpgid(pid, pid);
+
+        // Atualizando estado e criando dados do processo a ser adicionado
+        // à lista do shell
+        estado->num_processos++;
+        novo_processo.pid = pid;
+        novo_processo.id = estado->num_processos;
+        novo_processo.stopped = 0;
+        strcpy(novo_processo.nome, argv[0]);
+        
+        insere_lista(&(estado->processos), novo_processo);
+
+        // Verificando se precisa ficar em foreground
+        if (strcmp(argv[argc - 2], "&") != 0)
+        {
+            estado->fg = pid;
+            tcsetpgrp(STDIN_FILENO, pid);
+            espera_processo(pid, estado);
             
-            insere_lista(&(estado->processos), novo_processo);
-
-            // Verificando se precisa ficar em background
-            if (strcmp(argv[argc - 2], "&") != 0)
-                espera_processo(pid, estado);
+            // Devolvendo o controle do terminal para o shell
+            tcsetpgrp(STDIN_FILENO, estado->pgid);
         }
     }
 }
