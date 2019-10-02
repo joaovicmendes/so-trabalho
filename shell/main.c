@@ -83,6 +83,9 @@ int main(int argc, char **argv)
             args = NULL;
         }
 
+        if (estado.processos == NULL)
+            estado.num_processos = 0;
+
         free(buffer);
         buffer = NULL;
         free(comando);

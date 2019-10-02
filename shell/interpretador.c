@@ -12,12 +12,14 @@ void interpreta(int argc, char **argv, Contexto *estado)
 {
     if (strcmp(argv[0], "exit") == 0)
     {
+        pid_t pid;
         // Encerrando os processos na lista de processos do shell
         Node *aux = estado->processos;
         while (aux != NULL)
         {
-            kill(aux->proc.pid, SIGKILL);
-            aux = aux->prox;
+            pid = aux->proc.pid;
+            aux = aux->prox; 
+            kill(pid, SIGINT);
         }
         exit(0);
     }
@@ -38,7 +40,11 @@ void interpreta(int argc, char **argv, Contexto *estado)
         else
         {
             unsigned int num_job;
-            sscanf(argv[1], "%d ", &num_job);
+            if (sscanf(argv[1], "%d ", &num_job) <= 0)
+            {
+                printf("Processo [%s] não é um número\n", argv[1]);
+                return;
+            }
 
             // Pesquisando se processo requisitado está em execução
             Node *aux = pesquisa_id_lista(&(estado->processos), num_job);
@@ -60,7 +66,11 @@ void interpreta(int argc, char **argv, Contexto *estado)
         else
         {
             unsigned int num_job;
-            sscanf(argv[1], "%d ", &num_job);
+            if (sscanf(argv[1], "%d ", &num_job) <= 0)
+            {
+                printf("Processo [%s] não é um número\n", argv[1]);
+                return;
+            }
 
             // Pesquisando se processo requisitado está em execução
             Node *aux = pesquisa_id_lista(&(estado->processos), num_job);
@@ -71,6 +81,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
                     aux->proc.stopped = 0;
                     kill(aux->proc.pid, SIGCONT);
                 }
+                estado->fg = aux->proc.pid;
                 espera_processo(aux->proc.pid, estado);
             }
         }
@@ -110,6 +121,12 @@ void interpreta(int argc, char **argv, Contexto *estado)
         pid = fork();
         if (pid == 0) // Filho
         {
+
+            // Desabilitanto o tratamento de sinais para estes processos
+            signal(SIGCHLD, SIG_DFL);
+            signal(SIGINT, SIG_DFL);
+            signal(SIGTSTP, SIG_DFL);
+
             // Tratando de programas que usam > e < para redirecionar as entrada e saída padrão
             for (int i = 0; i < argc - 1;i++)
             {

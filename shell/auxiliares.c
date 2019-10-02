@@ -60,21 +60,17 @@ void espera_processo(pid_t pid, Contexto *estado)
     waitpid(pid, &status, WUNTRACED);
     
     Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
-
-    if (WIFEXITED(status) || WIFSIGNALED(status))
+    if (aux != NULL)
     {
-        printf(" [%d] Done    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
-        remove_pid_lista(&(estado->processos), pid);
-        estado->fg = getpid();
-    }
-    else if (WIFSTOPPED(status))
-    {
-        Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
-        if (aux != NULL)
+        if (WIFEXITED(status) || WIFSIGNALED(status))
+        {
+            printf(" [%d] Done    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+            remove_pid_lista(&(estado->processos), pid);
+        }
+        else if (WIFSTOPPED(status))
         {
             aux->proc.stopped = 1;
             printf(" [%d] Stopped    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
         }
-        estado->fg = getpid();
     }
 }

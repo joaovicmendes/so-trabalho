@@ -39,19 +39,16 @@ void sig_int(int sig)
     }
 }
 
-// @cleanup verificar que os signal handlers estão funcionando
 void sig_tstp(int sig)
 {
     pid_t pid_term = getpid();
     if (estado.fg != pid_term)
     {
-        kill(estado.fg, sig);
         Node *aux = pesquisa_pid_lista(&(estado.processos), estado.fg);
-
         if (aux != NULL)
-        {
             aux->proc.stopped = 1;
-            estado.fg = pid_term;
-        }
+
+        kill(estado.fg, sig);
+        estado.fg = pid_term;
     }
 }
