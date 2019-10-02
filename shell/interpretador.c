@@ -6,7 +6,6 @@
 #include <fcntl.h>
 #include "./headers/auxiliares.h"
 #include "./headers/lista.h"
-#include "./headers/sinal.h"
 
 void static prog(int argc, char **argv, Contexto *estado);
 
@@ -242,7 +241,7 @@ void static prog(int argc, char **argv, Contexto *estado)
         // Limpando a lista de argumentos, ou seja, passando os argumentos
         // até encontrar um dentre <, > e &.
         // contador começa em dois para guardar argv[0]: nomeprograma e 
-        //argv[n]: NULL.
+        // argv[n]: NULL.
         contador = 2;
         args = NULL;
         achou = 0;

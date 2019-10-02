@@ -36,7 +36,7 @@ int main(int argc, char **argv)
     int contador;
     estado.pgid = getpid();
     estado.fg = getpid();
-    estado.pwd = malloc_safe(sizeof(char) * TAM_PWD);
+    estado.pwd = NULL;
     estado.num_processos = 0;
     inicializa_lista(&estado.processos);
 

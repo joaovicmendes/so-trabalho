@@ -6,7 +6,6 @@
 #include <sys/wait.h>
 #include <sys/types.h>
 #include "./headers/auxiliares.h"
-#include "./headers/interpretador.h"
 #include "./headers/lista.h"
 #include "./headers/sinal.h"
 
@@ -50,29 +49,5 @@ void sig_chld(int sig)
             if (aux != NULL)
                 aux->proc.stopped = 0;
         }
-    }
-}
-
-void sig_int(int sig)
-{
-    pid_t pid_term = getpid();
-    if (estado.fg != pid_term)
-    {
-        kill(estado.fg, sig);
-        remove_pid_lista(&(estado.processos), estado.fg);
-        estado.fg = pid_term;
-    }
-}
-
-void sig_tstp(int sig)
-{
-    pid_t pid_term = getpid();
-    if (estado.fg != pid_term)
-    {
-        Node *aux = pesquisa_pid_lista(&(estado.processos), estado.fg);
-        if (aux != NULL)
-            aux->proc.stopped = 1;
-        kill(estado.fg, sig);
-        estado.fg = pid_term;
     }
 }

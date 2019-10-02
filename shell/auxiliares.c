@@ -3,9 +3,7 @@
 #include <string.h>
 #include <unistd.h>
 #include "./headers/auxiliares.h"
-#include "./headers/interpretador.h"
 #include "./headers/lista.h"
-#include "./headers/sinal.h"
 
 void *malloc_safe(unsigned nbytes)
 {
