@@ -21,7 +21,6 @@ typedef struct node {
 typedef struct contexto {
     char *pwd;                  // Path of working directory
     pid_t fg;                   // PID do processo em foreground
-    pid_t pgid;                 // PGID do shell
     Node *processos;            // Lista de processos filhos
     unsigned int num_processos; // ID para criação de novos processos
 } Contexto;
