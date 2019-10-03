@@ -108,9 +108,20 @@ void static prog(int argc, char **argv, Contexto *estado)
     Processo novo_processo;
     pid_t pid;
     int fd;
+    int esta_em_bin = 0;
     int contador;
-    char **args;
+    char *path = NULL;
+    char **args = NULL;
     char achou;
+    if (argv[0][0] != '.')
+    {
+        path = malloc_safe(sizeof(char) * (strlen("/bin/") + strlen(argv[0]) + 1));
+        strcpy(path, "/bin/");
+        strcat(path, argv[0]);
+        argv[0] = path;
+        esta_em_bin = 1;
+    }
+
 
     // Se o arquivo existente em argv[0] não existir
     fd = open(argv[0], O_RDONLY);
@@ -294,4 +305,7 @@ void static prog(int argc, char **argv, Contexto *estado)
             tcsetpgrp(STDIN_FILENO, estado->pgid);
         }
     }
+
+    if (esta_em_bin)
+        free(path);
 }
