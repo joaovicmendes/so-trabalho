@@ -88,11 +88,11 @@ void interpreta(int argc, char **argv, Contexto *estado)
         while (aux != NULL)
         {
             if (aux->proc.stopped)
-                printf(" [%d] Stopped    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+                printf(" [%d]  Stopped    %s  (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
             else if (estado->fg == aux->proc.pid)
-                printf(" [%d] Running    %s    (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+                printf(" [%d]+ Running    %s  (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
             else
-                printf(" [%d] Running    %s &  (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+                printf(" [%d]  Running    %s &(%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
             
             aux = aux->prox;
         }
