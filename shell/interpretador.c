@@ -29,9 +29,20 @@ void interpreta(int argc, char **argv, Contexto *estado)
         printf("%s\n", estado->pwd);
     }
     else if (strcmp(argv[0], "cd") == 0)
-    {
+    {              
         if (chdir(argv[1]) == -1)
             printf("shell: diretório '%s' não encontrado\n", argv[1]);
+        else
+        {
+            free(estado->pwd);
+            estado->pwd = getcwd(NULL, TAM_PWD);
+            
+            if (estado->pwd == NULL)
+            {
+                printf("Erro: não conseguiu armazenar pwd\n");
+                exit(1);
+            }
+        }
     }
     else if (strcmp(argv[0], "bg") == 0)
     {

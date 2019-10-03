@@ -1,7 +1,7 @@
 #ifndef AUX_H
 #define AUX_H
 
-#define TAM_PWD 250
+#define TAM_PWD 500
 
 // Struct das informações que o shell mantém de cada processo
 typedef struct Processo {

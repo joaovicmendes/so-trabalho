@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     estado.fg = getpid();
     estado.pgid = getpid();
     estado.num_processos = 0;
-    estado.pwd = NULL;
+    estado.pwd = getcwd(NULL, TAM_PWD);
     inicializa_lista(&estado.processos);
 
     // Definindo como os sinais devem ser tratados
@@ -65,8 +65,6 @@ int main(int argc, char **argv)
     for (;;)
     {
         // Imprimindo pwd + $
-        estado.pwd = malloc_safe(sizeof(char) * TAM_PWD);
-        estado.pwd = getcwd(estado.pwd, TAM_PWD);
         printf("\033[1;31m[%s]$\033[0m ", estado.pwd);
 
         // Lendo linha de comando
@@ -104,8 +102,9 @@ int main(int argc, char **argv)
 
         free(buffer), buffer = NULL;
         free(comando), comando = NULL;
-        free(estado.pwd), estado.pwd = NULL;
     }
+
+    free(estado.pwd), estado.pwd = NULL;
 
     return 0;
 }
