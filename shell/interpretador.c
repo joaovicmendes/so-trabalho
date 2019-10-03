@@ -4,6 +4,7 @@
 #include <signal.h>
 #include <unistd.h>
 #include <fcntl.h>
+#include <sys/stat.h>
 #include "./headers/auxiliares.h"
 #include "./headers/lista.h"
 
@@ -134,26 +135,42 @@ void static prog(int argc, char **argv, Contexto *estado)
 
     // Flags
     char achou = 0;
-    char esta_em_bin = 0;
+    char usou_bin = 0;
 
-    if (argv[0][0] != '.')
+    // Verificando que não é apenas . ou ..
+    if (strcmp(argv[0], ".") == 0 || strcmp(argv[0], "..") == 0)
+        return;
+
+    // Procurando arquivo
+    fd = open(argv[0], O_RDONLY);
+    // Se o arquivo argv[0] não estiver na pasta atual
+    if (fd == -1)
     {
         path = malloc_safe(sizeof(char) * (strlen("/bin/") + strlen(argv[0]) + 1));
         strcpy(path, "/bin/");
         strcat(path, argv[0]);
+        usou_bin = 1;
+
+        fd = open(path, O_RDONLY);
+        // Se o arquivo argv[0] não estiver na pasta /bin/
+        if (fd == -1)
+        {
+            printf("shell: '%s' não foi encontrado na pasta corrente, nem em 'bin/'\n", argv[0]);
+            free(path);
+            return;
+        }
+        close(fd);
         argv[0] = path;
-        esta_em_bin = 1;
-    }
-
-
-    // Se o arquivo existente em argv[0] não existir
-    fd = open(argv[0], O_RDONLY);
-    if (fd == -1)
-    {
-        printf("Problemas ao encontrar '%s'\n", argv[0]);
-        return;
     }
     close(fd);
+
+    // Verificando se é executável
+    struct stat sb;
+    if (!(stat(argv[0], &sb) == 0 && (sb.st_mode & S_IXUSR)))
+    {
+        printf("shell: '%s' foi encontrado, mas não é executável\n", argv[0]);
+        return;
+    }
 
     // Se o arquivo existe, basta duplicar o processo e execve()
     pid = fork();
@@ -288,6 +305,6 @@ void static prog(int argc, char **argv, Contexto *estado)
             printf(" [%d] Running   %s  (%d) &\n", novo_processo.id, novo_processo.nome, novo_processo.pid);
     }
 
-    if (esta_em_bin)
+    if (usou_bin)
         free(path);
 }
