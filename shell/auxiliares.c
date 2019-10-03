@@ -76,6 +76,53 @@ void espera_processo(pid_t pid, Contexto *estado)
             tcsetpgrp(STDIN_FILENO, estado->pgid);
         }   
     }
-
-    fflush(stdout);
 }
+
+void atualiza_processo(Contexto *estado)
+{
+    pid_t pid_term = getpid();
+    pid_t pid;
+    id_t id = 0;
+    siginfo_t infop;
+    infop.si_pid = 0;
+
+    if (waitid(P_ALL, id, &infop, WNOHANG) == 0)
+    {
+        if (infop.si_pid != 0)
+        {
+            pid = infop.si_pid;
+            if (infop.si_code == CLD_KILLED || infop.si_code == CLD_EXITED)
+            {
+                Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
+                if (aux != NULL)
+                    printf(" [%d]+ Done       %s  (%d)\n", aux->proc.id, aux->proc.nome, aux->proc.pid);
+                
+                remove_pid_lista(&(estado->processos), pid);
+                if (estado->fg == pid)
+                {
+                    estado->fg = pid_term;    
+                    tcsetpgrp(STDIN_FILENO, estado->pgid);
+                }    
+            }
+            else if (infop.si_code == CLD_STOPPED)
+            {
+                Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
+                if (aux != NULL)
+                    aux->proc.stopped = 1;
+
+                if (estado->fg == pid)
+                {
+                    estado->fg = pid_term;
+                    tcsetpgrp(STDIN_FILENO, estado->pgid);
+                }
+            }
+            else if (infop.si_code == CLD_CONTINUED)
+            {
+                Node *aux = pesquisa_pid_lista(&(estado->processos), pid);
+                if (aux != NULL)
+                    aux->proc.stopped = 0;
+            }
+        }
+    }
+}
+

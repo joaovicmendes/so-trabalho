@@ -93,6 +93,7 @@ int main(int argc, char **argv)
             for (int i = 1; i < contador; i++)
                 args[i] = strtok(NULL, " \n");
 
+            atualiza_processo(&estado);
             interpreta(contador, args, &estado);
 
             free(args);

@@ -35,4 +35,7 @@ char *remove_espacos(char* texto);
 // Função para esperar até que um processo filho termine ou pare
 void espera_processo(pid_t pid, Contexto *estado);
 
+// Função para atualzar status de um processo
+void atualiza_processo(Contexto *estado);
+
 #endif
