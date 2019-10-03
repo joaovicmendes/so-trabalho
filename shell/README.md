@@ -9,8 +9,7 @@ O grupo é composto pelos alunos:
 # Resumo
 - `headers/` Diretório onde ficam armazenados os arquivos de cabeçalho (*.h) com comentários sobre o que cada função faz
 - `auxiliares.c` Arquivo com funções auxiliares
-- `comandos.c` Arquivos com as funções dos comandos que o SGDB suporta
-- `interpretador.c` Arquivo com as funções responsáveis por interpretar os comandos
+- `interpretador.c` Arquivo com as funções responsáveis por executar a rotina apropriada
 - `lista.c` Arquivo com as funções relacionadas à lista encadeada
 - `main.c` Arquivo com o loop de leitura e execução dos comandos
 - `sinal.c` Arquivo com as funções relacionadas à tratamento de sinais
