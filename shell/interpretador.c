@@ -177,7 +177,7 @@ void static prog(int argc, char **argv, Contexto *estado)
                 close(fildes1);
                 free(pwd_in);
             }
-            else if(strcmp(argv[i], ">") == 0) // Redirecionamento de entrada truncando arquivo
+            else if(strcmp(argv[i], ">") == 0) // Redirecionamento de saida truncando arquivo
             {
                 char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
 
@@ -195,7 +195,7 @@ void static prog(int argc, char **argv, Contexto *estado)
                 close(fildes2);
                 free(pwd_out);
             }
-            else if(strcmp(argv[i], ">>") == 0) // Redirecionamento de entrada adicionando ao arquivo
+            else if(strcmp(argv[i], ">>") == 0) // Redirecionamento de saida adicionando ao arquivo
             {
                 char* pwd_out = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
 
@@ -213,7 +213,7 @@ void static prog(int argc, char **argv, Contexto *estado)
                 close(fildes2);
                 free(pwd_out);
             }
-            else if(strcmp(argv[i], "2>") == 0) // Redirecionamento de arquivo de erro
+            else if(strcmp(argv[i], "2>") == 0) // Redirecionamento de arquivo de erro truncando
             {
                 char* pwd_err = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
 
@@ -231,7 +231,7 @@ void static prog(int argc, char **argv, Contexto *estado)
                 close(fildes3);
                 free(pwd_err);
             }
-            else if(strcmp(argv[i], "2>>") == 0) // Redirecionamento de arquivo de erro
+            else if(strcmp(argv[i], "2>>") == 0) // Redirecionamento de arquivo de erro adicionando
             {
                 char* pwd_err = malloc_safe(sizeof(char) * (strlen(estado->pwd) + strlen(argv[i + 1]) + 2));
 
