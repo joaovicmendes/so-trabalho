@@ -34,10 +34,10 @@ int main(int argc, char **argv)
 
     // Variáveis úteis
     int contador;
-    estado.pgid = getpid();
     estado.fg = getpid();
-    estado.pwd = NULL;
+    estado.pgid = getpid();
     estado.num_processos = 0;
+    estado.pwd = NULL;
     inicializa_lista(&estado.processos);
 
     // Definindo como os sinais devem ser tratados
@@ -55,13 +55,12 @@ int main(int argc, char **argv)
     // Colocando o shell no seu próprio parent group
     if (setpgid(estado.pgid, estado.pgid) < 0)
     {
-        perror ("Não conseguiu colocar o shell no seu próprio Parent Group\n");
-        exit (1);
+        perror ("Erro: Não conseguiu colocar o shell no seu próprio Parent Group\n");
+        exit(1);
     }
 
     // Tomando controle do terminal
     tcsetpgrp(STDIN_FILENO, estado.pgid);
-
 
     for (;;)
     {
@@ -77,8 +76,6 @@ int main(int argc, char **argv)
         comando = remove_espacos(buffer);
         if (strcmp(comando, "\n") != 0)
         {
-            // Começa com dois para guardar em args[0] o nome do programa
-            // e em args[n] um NULL (usado no execve())
             contador = 2;
             for (int i = 0; i < strlen(comando); i++)
             {
@@ -93,24 +90,21 @@ int main(int argc, char **argv)
             for (int i = 1; i < contador; i++)
                 args[i] = strtok(NULL, " \n");
 
+            // Atualiza estado dos processos
             atualiza_processo(&estado);
+            
+            // Executa comando
             interpreta(contador, args, &estado);
 
-            free(args);
-            args = NULL;
+            free(args), args = NULL;
         }
 
         if (estado.processos == NULL)
             estado.num_processos = 0;
 
-        free(buffer);
-        buffer = NULL;
-
-        free(comando);
-        comando = NULL;
-
-        free(estado.pwd);
-        estado.pwd = NULL;
+        free(buffer), buffer = NULL;
+        free(comando), comando = NULL;
+        free(estado.pwd), estado.pwd = NULL;
     }
 
     return 0;
