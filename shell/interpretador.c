@@ -50,7 +50,10 @@ void interpreta(int argc, char **argv, Contexto *estado)
             // Pesquisando se processo requisitado está em execução
             Node *aux = pesquisa_id_lista(&(estado->processos), num_job);
             if (aux != NULL)
+            {
+                aux->proc.stopped = 0;
                 kill(aux->proc.pid, SIGCONT);
+            }
         }
     }
     else if (strcmp(argv[0], "fg") == 0)
@@ -72,6 +75,7 @@ void interpreta(int argc, char **argv, Contexto *estado)
             if (aux != NULL)
             {
                 estado->fg = aux->proc.pid;
+                aux->proc.stopped = 0;
                 tcsetpgrp(STDIN_FILENO, aux->proc.pid);
                 kill(aux->proc.pid, SIGCONT);
                 espera_processo(aux->proc.pid, estado);
