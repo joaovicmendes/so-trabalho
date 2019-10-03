@@ -7,12 +7,10 @@ O grupo é composto pelos alunos:
 - [Guilherme Locca Salomão (758569)](https://github.com/Caotichazard)
 
 # Resumo
-- `headers/` Diretório onde ficam armazenados os arquivos de cabeçalho (*.h)
+- `headers/` Diretório onde ficam armazenados os arquivos de cabeçalho (*.h) com comentários sobre o que cada função faz
 - `auxiliares.c` Arquivo com funções auxiliares
 - `comandos.c` Arquivos com as funções dos comandos que o SGDB suporta
 - `interpretador.c` Arquivo com as funções responsáveis por interpretar os comandos
 - `lista.c` Arquivo com as funções relacionadas à lista encadeada
+- `main.c` Arquivo com o loop de leitura e execução dos comandos
 - `sinal.c` Arquivo com as funções relacionadas à tratamento de sinais
-
-# Dúvidas
-Nossa principal dúvida foi a respeito de conceitos como de terminal. Não compreendemos como fazer com que um job em background não possa ter acesso à entrada e saída padrão, usando chamadas como `tcsetpgid()` e `tcgetpgid()`.
