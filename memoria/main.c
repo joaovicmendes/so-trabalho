@@ -8,14 +8,15 @@
 
     Aluno: João Victor Mendes Freire (758943)
     e Guilherme Locca Salomão (758569)
+    e Renan Dantas Pasquantonio (760549)
 */
 
 #include <stdio.h>
-#include <stdlib.h>
 #include "./headers/memoria.h"
 
-int main()
+int main(int argc, char **argv)
 {
+    
 
     return 0;
 }
