@@ -9,11 +9,14 @@ void *aloca_mem(size_t size)
 
     if (base) 
     {
+        
         // Procura um bloco
         last = base;
+        
         b = find_block(&last, s);
         if (b) 
         {
+            
             // Se pode ser dividido
             if ((b->size - s) >= (BLOCK_SIZE + 4))
                 split_block(b,s);
@@ -31,9 +34,13 @@ void *aloca_mem(size_t size)
     else 
     {
         // Na primeira chamada
+        
         b = extend_heap(NULL, s);
-        if (!b)
-            return NULL;
+        
+        if (!b){
+            return (NULL);
+        }
+        
         base = b;
     }
 
@@ -43,24 +50,26 @@ void *aloca_mem(size_t size)
 void libera(void *p)
 {
     t_block b;
-
+    
     if (valid_addr(p))
     {
+        
         b = get_block(p);
         b->free = 1;
+        
 
         // Junta com espaço anterior, se possível
         if (b->prev && b->prev->free)
             b = fusion(b->prev);
 
         // Junta com o próximo, se possível
-        if (b->next)
+        if (b->next && b->next->free)
             fusion(b);
         else
         {
             // Libera o fim da heap
             if (b->prev)
-            b->prev->next = NULL;
+                b->prev->next = NULL;
             else
                 base = NULL;
             
@@ -71,10 +80,12 @@ void libera(void *p)
 
 static t_block find_block(t_block *last, size_t size)
 {
+    
     t_block b = base;
-
+    
     while (b && !(b->free && b->size >= size)) 
     {
+        
         *last = b;
         b = b->next;
     }
@@ -111,7 +122,10 @@ static t_block extend_heap(t_block last, size_t s)
     b->size = s;
     b->next = NULL;
     b->prev = last;
+    
+    
     b->ptr = b->data;
+    
     if (last)
         last->next = b;
     b->free = 0;
@@ -119,27 +133,38 @@ static t_block extend_heap(t_block last, size_t s)
     return (b);
 }
 
-static t_block get_block(void *p)
+t_block get_block(void *p)
 {
+    
+    
     char *tmp;
     tmp = p;
-    return (p = tmp -= BLOCK_SIZE);
+    printf("%p .. %p\n", tmp, tmp-BLOCK_SIZE);
+    p = tmp-BLOCK_SIZE;
+
+    return (p);
 }
 
-static int valid_addr(void *p)
+int valid_addr(void *p)
 {
+    t_block b;
+    
     if (base)
     {
         if ( p > base && p < sbrk(0))
         {
-            return (p == (get_block(p))->ptr);
+            
+            b = get_block(p);
+            printf("%p\n",b);
+            
+            return (p == b->ptr);
         }
     }
 
     return 0;
 }
 
-static t_block fusion(t_block b)
+t_block fusion(t_block b)
 {
     if (b->next && b->next->free)
     {

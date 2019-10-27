@@ -28,6 +28,7 @@ int main(int argc, char **argv)
         mas preenche com 1s.
         Por fim, imprime *ptr, e mostra q seu espaço foi reutilizado por *ptr2.
     */
+   printf("%d", sizeof(t_block));
     printf("\n1. Reutilização de espaço\n");
     printf(" 1.1 Aloca um vetor *ptr de tamanho TAM_MAX e preenche com 0s.\n");
     printf(" 1.2 Libera a memória, e aloca um novo ponteiro *ptr2 de tamanho TAM_MAX + 1,\n");
@@ -40,12 +41,12 @@ int main(int argc, char **argv)
 
     printf(" Esperado: 0s\n");    
     for (int i = 0; i < TAM_VETOR; i++)    
-        printf("  Valor em ptr(%p) (alocado): %d\n", ptr + i, ptr[i]);
-
+        printf("  Valor em ptr(%p) (alocado): %d\n", ptr+i , ptr[i]);
+   
     libera(ptr);
-
+   
     ptr2 = (int *) aloca_mem(sizeof(int) * (TAM_VETOR - 1));
-    for (int i = 0; i < TAM_VETOR; i++)
+    for (int i = 0; i < TAM_VETOR-1; i++)
         ptr2[i] = 1;
 
     printf(" Esperado: 1s\n");    
@@ -55,6 +56,8 @@ int main(int argc, char **argv)
     printf(" Esperado: 1s\n");
     for (int i = 0; i < TAM_VETOR; i++)    
         printf("  Valor em ptr(%p) (não alocado): %d\n", ptr + i, ptr[i]);
+
+    libera(ptr2);
 
     return 0;
 }
