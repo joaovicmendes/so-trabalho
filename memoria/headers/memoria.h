@@ -8,16 +8,16 @@
 
 struct s_block
 {
-    size_t size;
+    size_t          size;
     struct s_block *next;
     struct s_block *prev;
-    int free;
-    void *ptr;
-    char data[1];
+    int             free;
+    void            *ptr;
+    char         data[1];
 };
 typedef struct s_block *t_block;
 
-#define BLOCK_SIZE 40
+#define BLOCK_SIZE 48
 
 #define align4(x) (((((x) - 1) >> 2) << 2) + 4)
 
@@ -50,7 +50,5 @@ static int valid_addr(void *p);
 
 // Junta um bloco com seu sucessor.
 static t_block fusion(t_block b);
-
-
 
 #endif

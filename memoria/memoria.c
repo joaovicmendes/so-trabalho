@@ -6,17 +6,13 @@ void *aloca_mem(size_t size)
 {
     t_block b, last;
     size_t s = align4(size);
-
     if (base) 
     {
-        
         // Procura um bloco
         last = base;
-        
         b = find_block(&last, s);
         if (b) 
-        {
-            
+        {          
             // Se pode ser dividido
             if ((b->size - s) >= (BLOCK_SIZE + 4))
                 split_block(b,s);
@@ -34,9 +30,7 @@ void *aloca_mem(size_t size)
     else 
     {
         // Na primeira chamada
-        
         b = extend_heap(NULL, s);
-        
         if (!b){
             return (NULL);
         }
@@ -50,13 +44,10 @@ void *aloca_mem(size_t size)
 void libera(void *p)
 {
     t_block b;
-    
     if (valid_addr(p))
     {
-        
         b = get_block(p);
         b->free = 1;
-        
 
         // Junta com espaço anterior, se possível
         if (b->prev && b->prev->free)
@@ -71,8 +62,7 @@ void libera(void *p)
             if (b->prev)
                 b->prev->next = NULL;
             else
-                base = NULL;
-            
+                base = NULL;  
             brk(b);
         }
     }
@@ -80,12 +70,9 @@ void libera(void *p)
 
 static t_block find_block(t_block *last, size_t size)
 {
-    
-    t_block b = base;
-    
-    while (b && !(b->free && b->size >= size)) 
+    t_block b = base; 
+    while (b != NULL && !(b->free && b->size >= size)) 
     {
-        
         *last = b;
         b = b->next;
     }
@@ -123,7 +110,6 @@ static t_block extend_heap(t_block last, size_t s)
     b->next = NULL;
     b->prev = last;
     
-    
     b->ptr = b->data;
     
     if (last)
@@ -135,12 +121,9 @@ static t_block extend_heap(t_block last, size_t s)
 
 t_block get_block(void *p)
 {
-    
-    
     char *tmp;
     tmp = p;
-    printf("%p .. %p\n", tmp, tmp-BLOCK_SIZE);
-    p = tmp-BLOCK_SIZE;
+    p = tmp - BLOCK_SIZE;
 
     return (p);
 }
@@ -148,15 +131,11 @@ t_block get_block(void *p)
 int valid_addr(void *p)
 {
     t_block b;
-    
     if (base)
     {
         if ( p > base && p < sbrk(0))
         {
-            
             b = get_block(p);
-            printf("%p\n",b);
-            
             return (p == b->ptr);
         }
     }
@@ -172,7 +151,7 @@ t_block fusion(t_block b)
         b->next = b->next->next;
 
         if (b->next)
-            b->next ->prev = b;
+            b->next->prev = b;
     }
     return b;
 }
