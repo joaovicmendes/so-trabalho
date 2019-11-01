@@ -100,6 +100,4 @@ int main(int argc, char **argv)
         printf("  Valor em  ptr(%p) (não alocado): %d\n", ptr + i, ptr[i]);
 
     return 0;
-
-    return 0;
 }
