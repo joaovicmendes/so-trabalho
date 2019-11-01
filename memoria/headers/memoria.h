@@ -17,7 +17,7 @@ struct s_block
 };
 typedef struct s_block *t_block;
 
-#define BLOCK_SIZE 48
+#define BLOCK_SIZE 40
 
 #define align4(x) (((((x) - 1) >> 2) << 2) + 4)
 

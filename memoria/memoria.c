@@ -62,7 +62,7 @@ void libera(void *p)
             if (b->prev)
                 b->prev->next = NULL;
             else
-                base = NULL;  
+                return; 
             brk(b);
         }
     }
