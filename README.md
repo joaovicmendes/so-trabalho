@@ -1,5 +1,5 @@
 # Sistemas Operacionais (1001535)
-Repositório dos trabalhos da disciplina Sistemas Operacionais (1001535), ministrada por Prof. Dr. Fredy Valente e Prof. Dr. Hélio Crestana Guardia, no segundo semestre de 2019.
+Repositório dos trabalhos da disciplina Sistemas Operacionais (1001535) - UFSCar 2019/2
 
 # Grupo
 O grupo é composto pelos alunos:
